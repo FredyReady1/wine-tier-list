@@ -15,7 +15,7 @@
     <div>
       <p class="eyebrow">Tasting night companion</p>
       <h1>Wine Tier List</h1>
-      <p class="subtitle">Upload each bottle, add its name, and drag it into your ranking.</p>
+      <p class="subtitle">Upload each bottle, add its name, and rank it from exceptional to poor.</p>
     </div>
     <div class="hero-actions">
       <button id="exportBtn" class="button primary">Export as image</button>
@@ -53,7 +53,7 @@
           <p class="section-kicker">Rank the wines</p>
           <h2>Best to worst</h2>
         </div>
-        <p class="drag-hint">Drag cards between tiers. Your board saves automatically on this device.</p>
+        <p class="drag-hint">On a phone, tap <strong>Change rank</strong>. On a computer, you can also drag cards between tiers. Your board saves automatically on this device.</p>
       </div>
 
       <div id="tierBoard" class="tier-board"></div>
@@ -77,9 +77,26 @@
       <div class="card-copy">
         <h4></h4>
         <p></p>
+        <button class="rank-button" type="button">Change rank</button>
       </div>
     </article>
   </template>
+
+  <div id="rankModal" class="modal" hidden>
+    <button class="modal-backdrop" type="button" aria-label="Close rank menu"></button>
+    <section class="rank-sheet" role="dialog" aria-modal="true" aria-labelledby="rankModalTitle">
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="rank-sheet-heading">
+        <div>
+          <p class="section-kicker">Move wine</p>
+          <h2 id="rankModalTitle">Choose a tier</h2>
+          <p id="selectedWineName" class="selected-wine-name"></p>
+        </div>
+        <button id="closeRankModal" class="close-modal" type="button" aria-label="Close">×</button>
+      </div>
+      <div id="rankOptions" class="rank-options"></div>
+    </section>
+  </div>
 
   <footer>
     <p>Made for memorable tastings.</p>
