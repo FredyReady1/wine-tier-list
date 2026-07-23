@@ -1,4 +1,4 @@
-# Wine Tier List
+# Wine Tier List website
 
 A browser-based wine ranking app built for GitHub Pages.
 
