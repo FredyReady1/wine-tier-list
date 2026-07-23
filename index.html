@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f7f0e5" />
+  <title>Wine Tier List</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Tasting night companion</p>
+      <h1>Wine Tier List</h1>
+      <p class="subtitle">Upload each bottle, add its name, and drag it into your ranking.</p>
+    </div>
+    <div class="hero-actions">
+      <button id="exportBtn" class="button primary">Export as image</button>
+      <button id="resetBtn" class="button secondary">Reset board</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="add-panel" aria-labelledby="add-wine-heading">
+      <div>
+        <p class="section-kicker">Add a bottle</p>
+        <h2 id="add-wine-heading">Create a wine card</h2>
+      </div>
+      <form id="wineForm" class="wine-form">
+        <label>
+          Wine name
+          <input id="wineName" type="text" placeholder="e.g. Meiomi Pinot Noir" maxlength="60" required />
+        </label>
+        <label>
+          Notes <span>(optional)</span>
+          <input id="wineNotes" type="text" placeholder="Vintage, region, or tasting note" maxlength="80" />
+        </label>
+        <label class="file-field">
+          Bottle picture
+          <input id="wineImage" type="file" accept="image/*" required />
+          <span id="fileName">Choose an image</span>
+        </label>
+        <button class="button primary add-button" type="submit">Add wine</button>
+      </form>
+    </section>
+
+    <section id="captureArea" class="board-shell" aria-label="Wine ranking board">
+      <div class="board-heading">
+        <div>
+          <p class="section-kicker">Rank the wines</p>
+          <h2>Best to worst</h2>
+        </div>
+        <p class="drag-hint">Drag cards between tiers. Your board saves automatically on this device.</p>
+      </div>
+
+      <div id="tierBoard" class="tier-board"></div>
+
+      <div class="unranked-wrap">
+        <div class="unranked-heading">
+          <h3>Unranked wines</h3>
+          <span id="wineCount">0 wines</span>
+        </div>
+        <div id="unranked" class="drop-zone card-grid" data-tier="unranked"></div>
+      </div>
+    </section>
+  </main>
+
+  <template id="wineCardTemplate">
+    <article class="wine-card" draggable="true">
+      <div class="image-wrap">
+        <img alt="" />
+        <button class="delete-button" type="button" aria-label="Delete wine">×</button>
+      </div>
+      <div class="card-copy">
+        <h4></h4>
+        <p></p>
+      </div>
+    </article>
+  </template>
+
+  <footer>
+    <p>Made for memorable tastings.</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
