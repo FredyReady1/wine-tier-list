@@ -15,8 +15,14 @@ const fileInput = document.querySelector('#wineImage');
 const fileName = document.querySelector('#fileName');
 const countLabel = document.querySelector('#wineCount');
 const template = document.querySelector('#wineCardTemplate');
+const rankModal = document.querySelector('#rankModal');
+const rankOptions = document.querySelector('#rankOptions');
+const selectedWineName = document.querySelector('#selectedWineName');
+const closeRankModalButton = document.querySelector('#closeRankModal');
+
 let wines = loadWines();
 let draggedId = null;
+let selectedWineId = null;
 
 function buildBoard() {
   board.innerHTML = '';
@@ -33,6 +39,28 @@ function buildBoard() {
     board.appendChild(row);
   });
   wireDropZones();
+}
+
+function buildRankOptions() {
+  const choices = [
+    ...tiers,
+    { id: 'unranked', label: '—', name: 'Unranked' }
+  ];
+
+  rankOptions.innerHTML = '';
+  choices.forEach((tier) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `rank-option ${tier.id === 'unranked' ? 'tier-unranked' : `tier-${tier.id}`}`;
+    button.dataset.tier = tier.id;
+    button.innerHTML = `
+      <span class="rank-letter">${tier.label}</span>
+      <span class="rank-name">${tier.name}</span>
+      <span class="rank-check" aria-hidden="true">✓</span>
+    `;
+    button.addEventListener('click', () => moveSelectedWine(tier.id));
+    rankOptions.appendChild(button);
+  });
 }
 
 function loadWines() {
@@ -79,8 +107,45 @@ async function compressImage(file) {
   return canvas.toDataURL('image/jpeg', 0.78);
 }
 
+function openRankModal(wineId) {
+  const wine = wines.find((item) => item.id === wineId);
+  if (!wine) return;
+
+  selectedWineId = wineId;
+  selectedWineName.textContent = wine.name;
+  rankOptions.querySelectorAll('.rank-option').forEach((button) => {
+    const isCurrentTier = button.dataset.tier === (wine.tier || 'unranked');
+    button.classList.toggle('current-tier', isCurrentTier);
+    button.setAttribute('aria-pressed', String(isCurrentTier));
+  });
+
+  rankModal.hidden = false;
+  document.body.classList.add('modal-open');
+  requestAnimationFrame(() => rankModal.classList.add('is-open'));
+  closeRankModalButton.focus();
+}
+
+function closeRankModal() {
+  rankModal.classList.remove('is-open');
+  document.body.classList.remove('modal-open');
+  selectedWineId = null;
+  window.setTimeout(() => {
+    rankModal.hidden = true;
+  }, 180);
+}
+
+function moveSelectedWine(tierId) {
+  const wine = wines.find((item) => item.id === selectedWineId);
+  if (!wine) return;
+  wine.tier = tierId;
+  saveWines();
+  render();
+  closeRankModal();
+}
+
 function render() {
   document.querySelectorAll('.wine-card').forEach((card) => card.remove());
+
   wines.forEach((wine) => {
     const card = template.content.firstElementChild.cloneNode(true);
     card.dataset.id = wine.id;
@@ -89,14 +154,22 @@ function render() {
     card.querySelector('h4').textContent = wine.name;
     card.querySelector('p').textContent = wine.notes || 'No notes added';
 
-    card.addEventListener('dragstart', () => {
+    card.addEventListener('dragstart', (event) => {
       draggedId = wine.id;
       card.classList.add('dragging');
+      event.dataTransfer?.setData('text/plain', wine.id);
+      if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
     });
+
     card.addEventListener('dragend', () => {
       draggedId = null;
       card.classList.remove('dragging');
     });
+
+    card.querySelector('.rank-button').addEventListener('click', () => {
+      openRankModal(wine.id);
+    });
+
     card.querySelector('.delete-button').addEventListener('click', () => {
       const confirmed = confirm(`Delete ${wine.name}?`);
       if (!confirmed) return;
@@ -106,8 +179,9 @@ function render() {
     });
 
     const target = document.querySelector(`[data-tier="${wine.tier || 'unranked'}"]`);
-    target.appendChild(card);
+    target?.appendChild(card);
   });
+
   countLabel.textContent = `${wines.length} ${wines.length === 1 ? 'wine' : 'wines'}`;
 }
 
@@ -117,11 +191,14 @@ function wireDropZones() {
       event.preventDefault();
       zone.classList.add('drag-over');
     });
+
     zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+
     zone.addEventListener('drop', (event) => {
       event.preventDefault();
       zone.classList.remove('drag-over');
-      const wine = wines.find((item) => item.id === draggedId);
+      const droppedId = draggedId || event.dataTransfer?.getData('text/plain');
+      const wine = wines.find((item) => item.id === droppedId);
       if (!wine) return;
       wine.tier = zone.dataset.tier;
       saveWines();
@@ -165,6 +242,13 @@ form.addEventListener('submit', async (event) => {
   }
 });
 
+closeRankModalButton.addEventListener('click', closeRankModal);
+rankModal.querySelector('.modal-backdrop').addEventListener('click', closeRankModal);
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !rankModal.hidden) closeRankModal();
+});
+
 document.querySelector('#resetBtn').addEventListener('click', () => {
   if (!wines.length) return;
   const confirmed = confirm('Clear every wine and reset the board?');
@@ -201,5 +285,5 @@ document.querySelector('#exportBtn').addEventListener('click', async () => {
 });
 
 buildBoard();
-wireDropZones();
+buildRankOptions();
 render();
